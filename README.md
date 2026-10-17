@@ -3,8 +3,6 @@
 Aplicación web para acompañar la actividad física de los usuarios mediante la generación de rutinas de entrenamiento personalizadas, el seguimiento de su progreso y el acceso a recursos relacionados con ejercicio y nutrición. La plataforma permite registrar información física, consultar rutinas semanales, localizar espacios para entrenar y gestionar distintos tipos de membresía.
 
 ```
-Estado: proyecto académico / versión disponible en el repositorio
-```
 
 ![Logo de AppEntrenamiento](src/main/webapp/resources/core/images/logo.png)
 
@@ -37,8 +35,6 @@ También permite trabajar con autenticación, generación de rutinas, bases de d
 
 ## Screenshots
 El repositorio contiene recursos gráficos de la aplicación, incluido su logo. Se pueden incorporar capturas reales de las pantallas de inicio, rutinas, perfil y estadísticas en esta sección.
-
-> Pendiente: agregar capturas de pantalla verificadas de la aplicación en funcionamiento.
 
 ## 🛠 Lenguajes y tecnologías
 - **Backend:** Java 11, Spring MVC 5.2.22, Hibernate 5.4.24, Spring Data JPA.
