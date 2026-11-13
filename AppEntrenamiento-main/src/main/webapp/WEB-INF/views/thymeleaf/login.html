@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<head th:replace="templates/head :: head">
+</head>
+<body>
+
+<div class="flex h-screen w-full items-center justify-center" style="background-image: url('/img/fondologin.jpg'); background-size: cover;">
+    <div class="rounded-xl bg-gray-800 bg-opacity-50 px-16 py-10 shadow-lg backdrop-blur-md max-sm:px-8">
+        <div class="text-white">
+            <div class="mb-8 flex flex-col items-center">
+                <img th:src="@{/img/user-icon.png}" width="150" alt="" srcset="" />
+                <h1 class="mb-2 text-2xl">Go-Fitness</h1>
+                <span class="text-gray-300">Ingrese al sistema</span>
+                <p th:if="${error != null}" class="alert pt-2 alert-danger" th:text="'Error ' + ${error}">
+                </p>
+            </div>
+            <form form action="#" th:action="@{/validar-login}" method="POST" th:object="${datosLogin}">
+                <div class="mb-4 text-lg">
+                    <label class="justify-center">Email</label>
+                </div>
+                <div>
+                    <input th:field="*{email}" id="email" type="email" name="email" class="rounded-3xl border-none bg-opacity-50 px-6 py-2 text-center placeholder-slate-200 shadow-lg outline-none backdrop-blur-md" style="color: black;" />
+                </div>
+
+                <div class="mb-4 text-lg">
+                    <label class="justify-center">Password</label>
+                </div>
+                <div>
+                    <input th:field="*{password}" type="password" id="password" name="password"  class="rounded-3xl border-none   bg-opacity-50 px-6 py-2 text-center text-inherit placeholder-slate-200 shadow-lg outline-none backdrop-blur-md" placeholder="*********" />
+                </div>
+                <div class="mt-8 flex justify-center text-lg text-black">
+                    <button id="btn-login"  Type="Submit" class="rounded-3xl btn btn-primary">Ingresar</button> <br>
+                </div>
+                <div class="mt-8 flex justify-center text-lg text-black">
+                    <p class="small fw-bold mt-2 pt-1 mb-0 text-light">No tienes tu usuario?  <a id="ir-a-registrarme" href="nuevo-usuario" class="text-primary" >Registrarme</a></p>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<footer th:replace="templates/footer:: footer">
+</footer>
+</body>
+</html>

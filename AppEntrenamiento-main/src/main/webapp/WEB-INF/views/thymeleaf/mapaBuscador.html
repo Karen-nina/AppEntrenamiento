@@ -1,0 +1,199 @@
+<!DOCTYPE HTML>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:replace="templates/head :: head">
+    <style>
+        .scroll {
+            overflow-y: auto;
+            max-height: 500px;
+        }
+        .buscadorContainer {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .searchCardContainer {
+            overflow-y: auto;
+            max-height: 300px;
+        }
+    </style>
+</head>
+<body>
+<div th:replace="templates/header :: header">
+</div>
+<div th:if="${error != null}">
+    <div class="modal fade" id="accessDeniedModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">Acceso Denegado</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <p th:text="${error}"></p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" onclick="window.location.href='/home'">Volver al Inicio</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="row p-4">
+    <div class="col-md-12">
+        <h2 class="text-center text-white">Encuentra tu lugar ideal</h2>
+    </div>
+</div>
+<div class="row justify-content-center">
+    <div class="col-md-4 m-2 rounded-xl bg-white ">
+        <div class="buscadorContainer">
+            <form id="searchForm" action="/mapaBuscador" method="get" class="d-flex">
+                <div class="form-group mr-2 mb-0">
+                    <select name="tipoActividad" class="form-control">
+                        <option value="" disabled selected> Tipo de Actividad </option>
+                        <option value="1">Musculación</option>
+                        <option value="2">Cardio</option>
+                        <option value="3">Calistenia</option>
+                    </select>
+                </div>
+                <div class="form-group mr-2 mb-0">
+                    <select id="distancia" name="distancia" class="form-control">
+                        <option value="" disabled selected> Distancia </option>
+                        <option value="3.00">3km</option>
+                        <option value="6.00">6km</option>
+                        <option value="8.00">8km</option>
+                        <option value="10.00">10km</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn rose-button align-self-end">
+                    <i class="fa-solid fa-dumbbell"></i> Filtrar
+                </button>
+            </form>
+        </div>
+
+        <section class="searchCardContainer scroll">
+            <span th:if="${error}" th:text="${error}" class="text-white"></span>
+            <div class="mt-1 searchCard" th:each="lugar : ${lugares}">
+                <img th:src="@{/img/ZonaRyp.jpg}" alt="">
+                <div class="infoContainer">
+                    <h5 th:text="${lugar.nombre}"></h5>
+                    <p>
+                        <span th:text="${lugar.ubicacion}"></span><br>
+                        <i class="fa-solid fa-location-dot"></i> Distancia:
+                        <span th:text="${#numbers.formatDecimal(lugar.distancia, 1, 2)}"></span> km
+                    </p>
+                </div>
+            </div>
+        </section>
+    </div>
+    <div class="col-md-4 m-2 rounded-xl bg-white">
+        <div id="mapid" style="height: 500px; width:100%;"></div>
+        <div class="ml-4" id="coordenadas"></div>
+        <div id="direccion"></div>
+        <div class="mt-2">
+            <button id="btn-actualizar-marcador" class="btn btn-primary">Actualizar Ubicacion</button>
+        </div>
+    </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script th:inline="javascript">
+    $(document).ready(function() {
+        var latitudUsuario = /*[[${latitudUsuario}]]*/ -34.74973643128108;
+        var longitudUsuario = /*[[${longitudUsuario}]]*/ -58.571734784656066;
+
+        var longitudLatitud = /*[[${longitudLatitud}]]*/;
+
+        var mymap = L.map('mapid').setView([latitudUsuario, longitudUsuario], 13);
+
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        }).addTo(mymap);
+
+        let customIcon = {
+            iconUrl:/*[[@{/img/puntero.png}]]*/,
+            iconSize:[40,40]
+        }
+        let myIcon = L.icon(customIcon);
+        let iconOptions = {
+            title:"ubicacion",
+            draggable:true,
+            icon:myIcon
+        }
+
+        var marker = L.marker([latitudUsuario, longitudUsuario], iconOptions).addTo(mymap);
+
+        // Función para actualizar la dirección
+        function actualizarDireccion(lat, lng) {
+            $.get(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lng}`, function(data) {
+                if (data && data.display_name) {
+                    $('#direccion').text(data.display_name);
+                } else {
+                    $('#direccion').text('No se encontró una dirección para las coordenadas proporcionadas.');
+                }
+            }).fail(function() {
+                $('#direccion').text('Error en la solicitud.');
+            });
+        }
+
+        // Llama a la función para actualizar la dirección al inicializar el marcador
+        actualizarDireccion(latitudUsuario, longitudUsuario);
+
+        marker.on('dragend', function(event) {
+            var marker = event.target;
+            var position = marker.getLatLng();
+            marker.setLatLng(new L.LatLng(position.lat, position.lng), {draggable: true});
+
+            $('#latitudHidden').val(position.lat);
+            $('#longitudHidden').val(position.lng);
+
+            actualizarDireccion(position.lat, position.lng);
+        });
+
+        $('<input>').attr({
+            type: 'hidden',
+            id: 'latitudHidden',
+            name: 'latitud'
+        }).appendTo('#searchForm');
+        $('<input>').attr({
+            type: 'hidden',
+            id: 'longitudHidden',
+            name: 'longitud'
+        }).appendTo('#searchForm');
+
+        $('#btn-actualizar-marcador').on('click', function() {
+            var nuevaLatitud = marker.getLatLng().lat;
+            var nuevaLongitud = marker.getLatLng().lng;
+
+            $.ajax({
+                url: '/actualizarUbicacion',
+                type: 'POST',
+                data: {
+                    latitud: nuevaLatitud,
+                    longitud: nuevaLongitud
+                },
+                success: function(response) {
+                    alert('Ubicación actualizada exitosamente.');
+                },
+                error: function(xhr, status, error) {
+                    alert('Error al actualizar la ubicación: ' + xhr.responseText);
+                }
+            });
+        });
+
+        for (var i = 0; i < longitudLatitud.length; i += 2) {
+            var lng = longitudLatitud[i];
+            var lat = longitudLatitud[i + 1];
+            L.marker([lat, lng]).addTo(mymap);
+        }
+
+        if ([[${error}]] != null) {
+            $('#accessDeniedModal').modal('show');
+        }
+    });
+
+</script>
+
+</body>
+</html>

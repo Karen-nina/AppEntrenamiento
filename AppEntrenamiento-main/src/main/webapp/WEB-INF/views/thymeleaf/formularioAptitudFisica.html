@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:replace="templates/head :: head">
+</head>
+<body>
+<div class="flex h-screen w-full items-center justify-center" style="background-image: url('/img/fondologin.jpg'); background-size: cover;">
+    <div class="rounded-xl bg-gray-800 bg-opacity-50 px-16 py-10 shadow-lg backdrop-blur-md max-sm:px-8">
+        <div class="row">
+            <div class="col-sm-12">
+                <div class="card d-flex h-100 secundario align-items-stretch p-6">
+                    <form id="form-aptitud-fisica" th:action="@{/{id}/guardar-aptitud-fisica(id=${usuario.getId()})}" method="POST" th:object="${aptitudFisica}">
+                        <h3 class="form-signin-heading text-light text-center">Datos de Aptitud Física: <span th:if="${usuario != null}" th:text="${usuario.getNombre()}"> </span> </h3>
+
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div data-mdb-input-init class="form-outline mb-3">
+                                    <label class="form-label text-light" for="altura">Altura (en cm)</label>
+                                    <input id="altura" class="form-control" th:field="*{altura}" required/>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div data-mdb-input-init class="form-outline mb-3">
+                                    <label class="form-label text-light" for="peso">Peso (en kg)</label>
+                                    <input id="peso" class="form-control" th:field="*{peso}" required/>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div data-mdb-input-init class="form-outline mb-3">
+                                    <label class="form-label text-light" for="fechaNacimiento">Fecha Nacimiento</label>
+                                    <input id="fechaNacimiento" type="date" class="form-control" th:field="*{fechaNacimiento}" required/>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-outline mb-3">
+                            <div id="tiposEntrenamientoContainer">
+
+                            </div>
+                            <button type="button" class="btn btn-primary" onclick="addEntrenamiento()">Agregar tipo de entrenamiento</button>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div data-mdb-input-init class="form-outline mb-3">
+                                    <label class="form-label text-light" for="horasEntrenamiento">Hora por Sesión:</label>
+                                    <input id="horasEntrenamiento" type="number" class="form-control" th:field="*{horasEntrenamiento}" required/>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div data-mdb-input-init class="form-outline mb-3">
+                                    <label class="form-label text-light" for="estadoFisico">Tu estado físico:</label>
+                                    <select id="estadoFisico" class="form-select" th:field="*{estadoFisico}" required>
+                                        <option value="">Seleccione...</option>
+                                        <option value="sedentario">Sedentario</option>
+                                        <option value="intermedio">Intermedio</option>
+                                        <option value="entrenado">Entrenado</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Resto del formulario omitido por brevedad -->
+                        <p th:if="${error != null}" class="alert pt-2 alert-danger" th:text="'Error ' + ${error}">
+
+                        <div class="text-center text-lg-start mt-4 pt-2">
+                            <button id="btn-guardar" class="btn btn-primary btn-lg" type="submit">Guardar</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<footer th:replace="templates/footer:: footer">
+</footer>
+
+<script th:inline="javascript">
+    /*<![CDATA[*/
+    var tiposEntrenamientoOptions = /*[[${tipoDeEntrenamientos}]]*/ ;
+
+    var opcionesHtml = tiposEntrenamientoOptions.map(function(entrenamiento) {
+        return '<option value="' + entrenamiento.id + '">' + entrenamiento.nombre + '</option>';
+    }).join('');
+    /*]]>*/
+
+ function addEntrenamiento() {
+    var container = document.getElementById('tiposEntrenamientoContainer');
+    var index = container.children.length;
+
+    if (index == 3) {
+        alert("No puede tener mas de tres entrenamientos.");
+        return
+    }
+
+    var newEntrenamiento = `
+        <div data-mdb-input-init class="form-outline mb-3">
+            <div class="row">
+                <div class="col-md-8">
+                    <label class="form-label text-light" for="tipoEntrenamiento">Tipo de entrenamiento</label>
+                    <div class="d-flex align-items-center">
+                        <select id="tipoEntrenamiento" class="form-select inputEntrenamiento" name="aptitudFisicaTipoEntrenamientos[` + index + `].tipoEntrenamiento.id">
+                            <option value="">Seleccione...</option>
+                            ` + opcionesHtml + `
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label text-light" for="diasEntrenamiento` + index + `">Días por Semana</label>
+                    <input id="diasEntrenamiento` + index + `" type="text" class="form-control dias" name="aptitudFisicaTipoEntrenamientos[` + index + `].dias">
+                </div>
+                <button type="button" class="btn btn-danger btn-sm ms-2 mt-2" onclick="removeEntrenamiento(this)">Borrar</button>
+            </div>
+            <input type="hidden" name="aptitudFisicaTipoEntrenamientos[` + index + `].id"/>
+            <input type="hidden" name="aptitudFisicaTipoEntrenamientos[` + index + `].aptitudFisica.id"/>
+        </div>
+    `;
+    container.insertAdjacentHTML('beforeend', newEntrenamiento);
+}
+
+function removeEntrenamiento(button) {
+    var container = document.getElementById('tiposEntrenamientoContainer');
+    if (container.children.length > 1) {
+        button.closest('.form-outline').remove();
+        updateEntrenamientoIndices();
+    } else {
+        alert('Debe haber al menos un tipo de entrenamiento.');
+    }
+}
+
+function updateEntrenamientoIndices() {
+    var container = document.getElementById('tiposEntrenamientoContainer');
+    var entrenamientos = container.children;
+
+    for (var i = 0; i < entrenamientos.length; i++) {
+        var select = entrenamientos[i].querySelector('select');
+        var selectedOption = select.options[select.selectedIndex];
+        var tipoEntrenamientoId = selectedOption.value;
+
+
+        select.name = 'aptitudFisicaTipoEntrenamientos[' + i + '].tipoEntrenamiento.id';
+        select.value = tipoEntrenamientoId;
+
+
+        var hiddenId = entrenamientos[i].querySelector('input[type="hidden"]');
+        hiddenId.value = tipoEntrenamientoId;
+        hiddenId.name = 'aptitudFisicaTipoEntrenamientos[' + i + '].tipoEntrenamiento.id';
+
+        var hiddenAptitudFisicaId = entrenamientos[i].querySelector('input[type="hidden"]:nth-of-type(2)');
+        hiddenAptitudFisicaId.name = 'aptitudFisicaTipoEntrenamientos[' + i + '].aptitudFisica.id';
+    }
+}
+
+$(document).ready(function() {
+    $('#btn-guardar').on('click', function(e) {
+        e.preventDefault();
+
+        var formData = $('#form-aptitud-fisica').serialize();
+
+        var altura = $('#altura').val();
+        var peso = $('#peso').val();
+        var horasEntrenamiento = $('#horasEntrenamiento').val();
+        var estadoFisico = $('#estadoFisico').val();
+        var fechaNacimiento = $('#fechaNacimiento').val();
+
+        if (!altura || !peso || !horasEntrenamiento || !estadoFisico || !fechaNacimiento) {
+            alert('Todos los campos deben estar completos');
+            return;
+        }
+
+        var fechaActual = new Date();
+        var fechaNac = new Date(fechaNacimiento);
+        var edad = fechaActual.getFullYear() - fechaNac.getFullYear();
+
+        if (new Date(fechaNac.setFullYear(fechaActual.getFullYear())) > fechaActual) {
+            edad--;
+        }
+
+        if (edad < 18) {
+            alert('Debe ser mayor de 18 años para registrarse');
+            return;
+        }
+
+        var sumaDias = 0;
+        $(".dias").each(function() {
+            var valor = parseInt($(this).val());
+                sumaDias += valor;
+        });
+
+        if (sumaDias > 5) {
+            alert("La suma de los dias no puede ser mayor a 5.");
+            return;
+        }
+
+        var valoresSeleccionados = [];
+        var duplicado = false;
+
+        $(".inputEntrenamiento").each(function() {
+        var valor = $(this).val();
+        if (valor !== "") {
+            if (valoresSeleccionados.includes(valor)) {
+                duplicado = true;
+                return false;
+            }
+            valoresSeleccionados.push(valor);
+         }
+        });
+
+        if (duplicado) {
+            alert("No se pueden seleccionar tipos de entrenamiento iguales.");
+            return;
+        }
+
+        $.ajax({
+            type: 'POST',
+            url: $('#form-aptitud-fisica').attr('action'),
+            data: formData,
+            success: function(response) {
+                window.location.href = '/home';
+            },
+            error: function(xhr, status, error) {
+                console.error('Error en la solicitud:', error);
+            }
+        });
+    });
+});
+</script>
+</body>
+</html>

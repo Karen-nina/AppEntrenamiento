@@ -1,0 +1,5 @@
+Primario : #F70C5B
+variaciones del rosa principal:
+#AB093F
+#8A0732
+#660525

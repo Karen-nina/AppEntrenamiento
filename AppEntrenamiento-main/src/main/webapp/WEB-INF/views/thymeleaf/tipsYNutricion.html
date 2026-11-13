@@ -1,0 +1,130 @@
+<!DOCTYPE HTML>
+<html lang="es" xmlns:th="http://www.thymeleaf.org"  xmlns:sec="http://www.thymeleaf.org/extras/spring-security" >
+<head th:replace="templates/head :: head">
+    <style>
+        .card {
+            background-color: rgba(255, 255, 255, 0.8); /* Fondo translúcido */
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+<div th:replace="templates/header :: header">
+</div>
+
+<div th:if="${error != null}">
+    <div th:replace="templates/errorModal :: accessDeniedModal(errorMessage=${error}, redirect=true)"></div>
+</div>
+
+<h2 class="text-light text-center pt-5" >Tips de Nutrición y más</h2>
+<div class="container text-center">
+    <form th:action="@{/tipsYNutricion}" method="get">
+        <label for="tipo" class="text-light">Filtrar por tipo:</label>
+        <select id="tipo" name="tipo">
+            <option value="todos" th:selected="${tipoSeleccionado == 'todos'}">Todos</option>
+            <option value="cardio" th:selected="${tipoSeleccionado == 'Cardio'}">Cardio</option>
+            <option value="musculacion" th:selected="${tipoSeleccionado == 'Musculacion'}">Musculación</option>
+            <option value="calistenia" th:selected="${tipoSeleccionado == 'Calistenia'}">Calistenia</option>
+        </select>
+        <button type="submit" class="btn btn-primary">Aplicar</button>
+    </form>
+</div>
+
+<div class="container pt-2">
+    <div class="row">
+        <div th:each="articulo : ${articulos}" class="col-md-4 mb-4">
+            <div class="card shadow-sm">
+                <img class="card-img-top" th:src="@{${articulo.getImagen()}}" alt="Imagen del artículo"
+                     style="max-height: 190px; object-fit: cover;">
+                <div class="card-body">
+                    <h5 class="card-title" th:text="${articulo.getTitulo()}">Título del Artículo</h5>
+                    <p th:text="${articulo.getTipoEntrenamiento()}"></p>
+                    <h6 class="card-subtitle mb-2 text-muted" th:text="${articulo.getSubtitulo()}">Subtítulo del Artículo</h6>
+                    <button type="button" class="btn btn-primary btn-sm btn-more" th:attr="data-id=${articulo.getId()}"
+                            data-toggle="modal" data-target="#exampleModal">Ver más
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<div class="d-flex justify-content-end">
+    <ul class="pagination">
+        <!-- Enlace "Anterior" -->
+        <li th:classappend="${currentPage <= 0} ? 'disabled' : ''" class="page-item">
+            <a th:href="@{/tipsYNutricion(page=${currentPage - 1}, size=${10})}" class="page-link">&laquo; Anterior</a>
+        </li>
+
+        <!-- Números de página -->
+        <li th:each="pageNum : ${#numbers.sequence(0, totalPages - 1)}" th:classappend="${pageNum == currentPage} ? 'active' : ''" class="page-item">
+            <a th:href="@{/tipsYNutricion(page=${pageNum}, size=${10})}" th:text="${pageNum + 1}" class="page-link">1</a>
+        </li>
+
+        <!-- Enlace "Siguiente" -->
+        <li th:classappend="${currentPage >= totalPages - 1} ? 'disabled' : ''" class="page-item">
+            <a th:href="@{/tipsYNutricion(page=${currentPage + 1}, size=${10})}" class="page-link">Siguiente &raquo;</a>
+        </li>
+    </ul>
+</div>
+
+<!-- Modal -->
+<div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">Tips para tu rutina</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div id="modalContent"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
+            </div>
+        </div>
+    </div>
+</div>
+<footer th:replace="templates/footer:: footer">
+</footer>
+</body>
+<!-- jQuery -->
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+
+<!-- Bootstrap JS -->
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+<script>
+    $(document).ready(function () {
+        $('.btn-more').click(function () {
+            var id = $(this).data('id');
+            $.ajax({
+                type: "GET",
+                url: "/tipsYNutricion/" + id,
+                dataType: "json",
+                success: function (articulo) {
+                    console.log(articulo);
+                    mostrarDetalleArticulo(articulo);
+                },
+                error: function () {
+                    alert("Error al cargar los detalles del artículo.");
+                }
+            });
+        });
+        function mostrarDetalleArticulo(articulo) {
+            $('#modalContent').html('<h5>' + articulo.titulo + '</h5><p>' + articulo.contenido + '</p>');
+            $('#exampleModal').modal('show');
+        }
+    });
+</script>
+<script th:inline="javascript">
+    if ([[${error}]] != null) {
+        $(document).ready(function() {
+            $('#accessDeniedModal').modal('show');
+        });
+    }
+</script>
+</html>

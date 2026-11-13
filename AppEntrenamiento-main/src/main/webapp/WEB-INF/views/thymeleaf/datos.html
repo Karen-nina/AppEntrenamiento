@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="templates/head :: head">
+</head>
+<style>
+
+    .chartJs {
+        background-color: white;
+        height: 500px;
+        width: 700px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        border-radius: 20px;
+        box-shadow: 6px 11px 22px #3e3e3e;;
+    }
+
+    #sinDatos{
+      display:none;
+      position: absolute;
+      top: 50px;
+      left: 177px;
+      right: 0;
+      bottom: 0;
+    }
+
+    .charts{
+       height: 400px;
+       width: 400px;
+    }
+
+    .charJsTitle{
+       color: #5e5e5e;
+        width: 100%;
+        text-align: left;
+        margin-top: 10px;
+        padding-left: 30px;
+        font-weight: bold;
+    }
+
+    .chartContainer {
+        height: auto;
+        display: flex;
+        padding: 40px;
+        padding-bottom: 15px;
+        width:100%;
+        gap: 20px;
+        justify-content: center;
+    }
+
+    .chartContainerBottom{
+        display: flex;
+        justify-content: center;
+        width: 100%;
+    }
+
+    .exerciseContainer{
+        width: 80%;
+    }
+
+    .exerciseContainer .charts{
+        width:  63%;
+    }
+
+    .exerciseContainer .charts #ProgresChart{
+        margin:auto;
+    }
+
+    section{
+         display:flex;
+         width:  100%;
+         height: 100%;
+    }
+
+    .falseLeftPanel{
+        width: 30%;
+        background-color: white;
+        margin-left: 40px;
+        box-shadow: 6px 11px 22px #3e3e3e;;
+    }
+
+    .leftPanel{
+       display: flex;
+       margin-top: 24px;
+       position: absolute;
+       width: 30%;
+       padding-left: 40px;
+       flex-direction: column;
+       align-items: center;
+    }
+
+    .rightPanel{
+        width:  70%;
+    }
+
+    .cardLevel{
+        width: 66%;
+        margin-top: 60px;
+        background-color: bisque;
+        display: flex;
+        flex-direction: column;
+        padding: 20px;
+        border-radius: 10px;
+        background: rgb(189, 176, 252);
+        background: linear-gradient(119deg, rgba(189, 176, 252, 1) 0%, rgba(249, 154, 124, 1) 35%, rgba(108, 201, 237, 1) 100%);
+    }
+
+     .cardLevel h4{
+        font-size: 1.5rem;
+        font-weight: bold;
+    }
+
+    .cardHeader{
+        width: 100%;
+        display: flex;
+        padding-right: 10px;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .btnProgreso{
+        width: 135px;
+        height: 40px;
+    }
+
+
+    .btnModal{
+        width: 100%;
+        margin-top: 10px;
+        border-radius: 0 !important;
+    }
+
+</style>
+<body>
+
+<div th:replace="templates/header :: header">
+</div>
+
+<div th:if="${error != null}">
+    <div th:replace="templates/errorModal :: accessDeniedModal(errorMessage=${error}, redirect=true)"></div>
+</div>
+
+<section class="bg-white bg-opacity-50" th:if="${error == null}">
+
+    <div class="falseLeftPanel">
+
+    </div>
+
+    <div class="leftPanel">
+        <img th:src="@{/img/avatar.png}"/>
+        <h3 th:text="${usuario.nombre} + ' ' + ${usuario.apellido}"></h3>
+        <div class="cardLevel">
+            <h4 th:text="'Nivel de acceso: ' + ${membresia.tipo}"></h4>
+            <span th:text="'Pase disponible hasta el: ' + ${membresia.fechaFin}"></span>
+        </div>
+    </div>
+    <div class="rightPanel">
+        <div class="chartContainer">
+            <div class="daysContainer chartJs">
+                <h1 class="charJsTitle">Dias mas frecuentes</h1>
+                <div class="charts">
+                    <canvas id="DaysChart" width="400" height="400"></canvas>
+                </div>
+            </div>
+
+            <div class="chartJs">
+                <h1 class="charJsTitle">Ejercicios mas realizados</h1>
+                <div class="charts">
+                    <canvas id="exerciseChart" width="400" height="400"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="chartContainerBottom">
+            <div class="exerciseContainer chartJs">
+                <div class="cardHeader">
+                    <h1 class="charJsTitle" style="width: 43%;">Historico peso</h1>
+                    <button type="button" class="btn btn-primary btnProgreso" data-toggle="modal" data-target="#addPesoModal" style="width: 16%;">
+                        Agregar Peso
+                    </button>
+                    <div class="filter-container" style="gap: 20px;display: flex;width: 69%;align-items: center;justify-content: flex-end;">
+                        <label for="monthSelect" style=" width: 29%;">Seleccionar Periodo:</label>
+                        <select id="monthSelect" class="form-control" style="width: 22%;">
+                            <option value="0">Anual</option>
+                            <option value="1">Enero</option>
+                            <option value="2">Febrero</option>
+                            <option value="3">Marzo</option>
+                            <option value="4">Abril</option>
+                            <option value="5">Mayo</option>
+                            <option value="6">Junio</option>
+                            <option value="7">Julio</option>
+                            <option value="8">Agosto</option>
+                            <option value="9">Septiembre</option>
+                            <option value="10">Octubre</option>
+                            <option value="11">Noviembre</option>
+                            <option value="12">Diciembre</option>
+                        </select>
+                        <button id="filterButton" class="btn btn-primary">Filtrar</button>
+                        <button id="clearButton" class="btn btn-secondary">Limpiar Filtro</button>
+                    </div>
+                </div>
+
+                <div class="charts" style="relative">
+                    <canvas id="ProgresChart" width="700" height="400"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <div class="modal fade" id="addPesoModal" tabindex="-1" role="dialog" aria-labelledby="addPesoModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addPesoModalLabel">Agregar Peso</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form id="formAgregarPeso" th:action="@{/cargar-peso}" method="POST" th:object="${datosPeso}">
+                        <div class="form-group">
+                            <label for="inputPeso">Peso</label>
+                            <input th:field="*{peso}" type="number" class="form-control" id="inputPeso" name="peso" step="0.1" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="inputFecha">Fecha</label>
+                            <input th:field="*{fecha}" type="date" class="form-control" id="inputFecha" name="fecha" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary btnModal">Agregar</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</section>
+<script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script th:inline="javascript" th:if="${error == null}">
+    let backgroundColor = ['#9181E2','#F99A7C','#6CC9ED','#F26A4B','#F5CEFB','#BBE4DE'];
+
+    let barAndLineOptions = {
+        scales: {
+            y: {
+                beginAtZero: true,
+                ticks: {
+                    color: 'black'
+                }
+            },
+            x: {
+                ticks: {
+                    color: 'black'
+                }
+            }
+        },
+        plugins: {
+            legend: {
+                display: false
+            },
+            background: {
+                color: 'red'
+            }
+        }
+    };
+
+    let options = {
+         scales: {
+            y: {
+                beginAtZero: true,
+                ticks: {
+                    color: 'black',
+                    display: false // Oculta los ticks del eje Y
+                },
+                grid: {
+                    display: false // Oculta la cuadrícula del eje Y
+                }
+            },
+            x: {
+                ticks: {
+                    color: 'black',
+                    display: false // Oculta los ticks del eje X
+                },
+                grid: {
+                    display: false // Oculta la cuadrícula del eje X
+                }
+            }
+        },
+        plugins: {
+            legend: {
+                display: false
+            },
+            background: {
+                color: 'red'
+            }
+        }
+    };
+
+    let daysChart;
+    let exerciseChart;
+    let progressChart;
+
+    document.addEventListener('DOMContentLoaded', function () {
+        var ctxDays = document.getElementById('DaysChart').getContext('2d');
+        var dias = /*[[${dias}]]*/;
+        var labelsDias = /*[[${labelDias}]]*/;
+
+        daysChart = new Chart(ctxDays, {
+            type: 'bar',
+            data: {
+                labels: ['Lunes','Martes','Miercoles','Jueves','Viernes','Sabado'],
+                datasets: [{
+                    label: "En total",
+                    data: dias,
+                    backgroundColor: backgroundColor,
+                    borderColor: backgroundColor,
+                    borderWidth: 1
+                }]
+            },
+            options: barAndLineOptions
+        });
+    });
+
+    document.addEventListener('DOMContentLoaded', function () {
+        var ctxExercise = document.getElementById('exerciseChart').getContext('2d');
+        var labelsEjercicios = /*[[${labelEjercicios}]]*/;
+
+        var data = /*[[${ejercicios}]]*/;
+
+        var backgroundColor = ['#9181E2', '#F99A7C', '#6CC9ED', '#F26A4B', '#F5CEFB', '#BBE4DE'];
+
+        var options = {
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        color: 'black'
+                    }
+                },
+                x: {
+                    ticks: {
+                        color: 'black'
+                    }
+                }
+            },
+            plugins: {
+                legend: {
+                    display: false
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function (tooltipItem) {
+                            var index = tooltipItem.dataIndex;
+                            return "Total" + ': ' + data[index];
+                        }
+                    }
+                },
+                background: {
+                    color: 'red'
+                }
+            }
+        };
+
+        exerciseChart = new Chart(ctxExercise, {
+            type: 'doughnut',
+            data: {
+                labels: labelsEjercicios,
+                datasets: [{
+                    label: 'Dias de la semana',
+                    data: data,
+                    backgroundColor: backgroundColor,
+                    borderColor: backgroundColor,
+                    borderWidth: 1
+                }]
+            },
+            options: options
+        });
+    });
+
+    document.addEventListener('DOMContentLoaded', function () {
+        var ctxProgress = document.getElementById('ProgresChart').getContext('2d');
+        var registroPeso = /*[[${registroPeso}]]*/;
+
+
+        progressChart = new Chart(ctxProgress, {
+            type: 'line',
+            data: {
+                labels: ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio','Julio', 'Agosto','Septiembre', 'Octubre', 'Noviembre','Diciembre'],
+                datasets: [{
+                    label: 'Peso',
+                    data: registroPeso,
+                    backgroundColor: ['#7357E8','#F99A7C','#6CC9ED','#F26A4B','#F5CEFB','#BBE4DE'],
+                    borderColor: ['#7357E8','#F99A7C','#6CC9ED','#F26A4B','#F5CEFB','#BBE4DE'],
+                    borderWidth: 1
+                }]
+            },
+            options: barAndLineOptions
+        });
+    });
+</script>
+
+<script th:inline="javascript">
+    if ([[${error}]] != null) {
+        $(document).ready(function() {
+            $('#accessDeniedModal').modal('show');
+        });
+    }
+</script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+    $('#filterButton').on('click', function() {
+        var month = $('#monthSelect').val();
+        $.ajax({
+            url: '/filtrar-datos',
+            type: 'GET',
+            data: { mes: month },
+            success: function(data) {
+                updateCharts(data, month);
+            },
+            error: function(error) {
+                console.log('Error:', error);
+                updateCharts([], 0);
+            }
+        });
+    });
+
+    $('#clearButton').on('click', function() {
+        $('#monthSelect').val('0'); 
+        $.ajax({
+            url: '/limpiar-filtro',
+            type: 'GET',
+            success: function(data) {
+                updateCharts(data, 0);
+            },
+            error: function(error) {
+                console.log('Error:', error);
+                updateCharts([], 0);
+            }
+        });
+    });
+
+    function updateCharts(data, month) {
+        var ctxProgress = document.getElementById('ProgresChart').getContext('2d');
+
+
+        if (progressChart) {
+            progressChart.destroy();
+        }
+
+        if (data.length === 0) {
+             alert('No hay datos para mostrar');
+            return;
+        }
+        var labels = (month == 0)
+            ? ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre']
+            : data.map((_, index) => `Día ${index + 1}`); // Etiquetas para días del mes
+
+        progressChart.innerHTML = '<canvas id="ProgresChart"></canvas>';
+        ctxProgress = document.getElementById('ProgresChart').getContext('2d');
+
+        progressChart = new Chart(ctxProgress, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Peso',
+                    data: data,
+                    backgroundColor: ['#7357E8','#F99A7C','#6CC9ED','#F26A4B','#F5CEFB','#BBE4DE'],
+                    borderColor: ['#7357E8','#F99A7C','#6CC9ED','#F26A4B','#F5CEFB','#BBE4DE'],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            color: 'black'
+                        }
+                    },
+                    x: {
+                        ticks: {
+                            color: 'black',
+                            display: month == 0
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function (tooltipItem) {
+                                var index = tooltipItem.dataIndex;
+                                return 'Peso: ' + data[index];
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    }
+});
+</script>
+</body>
+</html>
