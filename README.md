@@ -3,7 +3,7 @@
 AppEntrenamiento es una aplicación web para organizar y acompañar el entrenamiento físico. Permite registrar usuarios, recopilar información sobre su aptitud física y preferencias, generar rutinas semanales, consultar ejercicios y llevar un seguimiento personal. También incorpora búsqueda de lugares para realizar actividades, información sobre nutrición y membresías con integración de pagos.
 
 
-![Logo de AppEntrenamiento](src/main/webapp/resources/core/images/logo.png)
+ <a href="https://github.com/Karen-nina/AppEntrenamiento"><img src="imagenes/entrenamiento.png" alt="AppEntrenamiento" width="350"></a>
 
 ## Índice
 - [Funcionalidades principales](#funcionalidades-principales)
