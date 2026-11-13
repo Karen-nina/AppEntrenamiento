@@ -1,0 +1,46 @@
+
+
+body{
+    padding:0px;
+    margin:0px;
+}
+.starter-template {
+  padding: 3rem 1.5rem;
+  text-align: center;
+}
+
+
+body {
+    background-image: url('/img/fondologin.jpg');
+}
+.primario{
+    background-color: #F70C5B !important;
+    font-size: 16px;
+}
+.secundario{
+    background-color:#404040;
+}
+.titulo1{
+    color: #F70C5B !important;
+    font-size: 100px;
+}
+.titulo2{
+    color:grey;
+    font-size: 70px;
+}
+.texto1{
+    color: #F70C5B !important;
+}
+texto2{
+    color: grey !important;
+}
+
+.custom-width {
+        width: 81px;
+}
+
+.navbar{
+    padding-top:0;
+    padding-bottom: 0;
+}
+

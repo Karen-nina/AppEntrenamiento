@@ -1,0 +1,381 @@
+<!DOCTYPE HTML>
+<html lang="es" xmlns:th="http://www.thymeleaf.org"  xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:replace="templates/head :: head">
+</head>
+<style>
+  .ag-format-container {
+    width: 1142px;
+    margin: 0 auto;
+  }
+  .ag-courses_box {
+    display: -webkit-box;
+    display: -ms-flexbox;
+    display: flex;
+    -webkit-box-align: start;
+    -ms-flex-align: start;
+    align-items: flex-start;
+    -ms-flex-wrap: wrap;
+    flex-wrap: wrap;
+
+    padding: 50px 0;
+  }
+  .ag-courses_item {
+    -ms-flex-preferred-size: calc(33.33333% - 30px);
+    flex-basis: calc(33.33333% - 30px);
+
+    margin: 0 15px 30px;
+
+    overflow: hidden;
+
+    border-radius: 28px;
+  }
+  .ag-courses-item_link {
+    display: block;
+    padding: 30px 20px;
+    background-color: #121212;
+
+    overflow: hidden;
+
+    position: relative;
+  }
+  .ag-courses-item_link:hover,
+  .ag-courses-item_link:hover .ag-courses-item_date {
+    text-decoration: none;
+    color: #FFF;
+  }
+  .ag-courses-item_link:hover .ag-courses-item_bg {
+    -webkit-transform: scale(10);
+    -ms-transform: scale(10);
+    transform: scale(10);
+  }
+  .ag-courses-item_title {
+    min-height: 87px;
+    margin: 0 0 25px;
+
+    overflow: hidden;
+
+    font-weight: bold;
+    font-size: 30px;
+    color: #FFF;
+
+    z-index: 2;
+    position: relative;
+  }
+  .ag-courses-item_date-box {
+    font-size: 18px;
+    color: #FFF;
+
+    z-index: 2;
+    position: relative;
+  }
+  .ag-courses-item_date {
+    font-weight: bold;
+    color: #f9b234;
+
+    -webkit-transition: color .5s ease;
+    -o-transition: color .5s ease;
+    transition: color .5s ease
+  }
+  .ag-courses-item_bg {
+    height: 128px;
+    width: 128px;
+    background-color: #f9b234;
+
+    z-index: 1;
+    position: absolute;
+    top: -75px;
+    right: -75px;
+
+    border-radius: 50%;
+
+    -webkit-transition: all .5s ease;
+    -o-transition: all .5s ease;
+    transition: all .5s ease;
+  }
+  .ag-courses_item:nth-child(2n) .ag-courses-item_bg {
+    background-color: #3ecd5e;
+  }
+  .ag-courses_item:nth-child(3n) .ag-courses-item_bg {
+    background-color: #e44002;
+  }
+  .ag-courses_item:nth-child(4n) .ag-courses-item_bg {
+    background-color: #952aff;
+  }
+  .ag-courses_item:nth-child(5n) .ag-courses-item_bg {
+    background-color: #cd3e94;
+  }
+  .ag-courses_item:nth-child(6n) .ag-courses-item_bg {
+    background-color: #4c49ea;
+  }
+
+
+
+  @media only screen and (max-width: 979px) {
+    .ag-courses_item {
+      -ms-flex-preferred-size: calc(50% - 30px);
+      flex-basis: calc(50% - 30px);
+    }
+    .ag-courses-item_title {
+      font-size: 24px;
+    }
+  }
+
+  @media only screen and (max-width: 767px) {
+    .ag-format-container {
+      width: 96%;
+    }
+
+  }
+  @media only screen and (max-width: 639px) {
+    .ag-courses_item {
+      flex-basis: 100%;
+    }
+    .ag-courses-item_title {
+      min-height: 72px;
+      line-height: 1;
+
+      font-size: 24px;
+    }
+    .ag-courses-item_link {
+      padding: 22px 40px;
+    }
+    .ag-courses-item_date-box {
+      font-size: 16px;
+    }
+  }
+</style>
+<body>
+
+<div th:replace="templates/header :: header">
+</div>
+
+<main role="main" class="container">
+
+
+  <div class = "container">
+
+    <div th:if="${usuario != null}">
+      <h2 class="text-light text-center" style="padding-top:50px">Bienvenid@: <span th:text="${usuario.getNombre()}"></span>  <span  th:text="${usuario.getApellido()}"></span></h2>
+    </div>
+    </div>
+    <div th:if="${usuario.getAptitudFisica() == null}">
+     <p class="text-light">Por favor no olvide completar tu <a  class="inline-flex flex-col items-center justify-center px-5 hover:bg-gray-50 dark:hover:bg-gray-800 group" th:onclick="|window.location.href='@{/perfil}'|">Perfil</a></p>
+    </div>
+  <div th:if="${usuario.getAptitudFisica() != null}" class="d-flex justify-content-center">
+    <div class="card text-center" style="padding-left:100px;padding-right:100px;background-color: rgb(255, 255, 255);">
+      <div class="card-body">
+        <h5 class="card-title">Datos de Aptitud Física</h5>
+        <p class="card-text">Altura: <span th:text="${#numbers.formatDecimal(usuario.getAptitudFisica().getAltura(), 1, 2)}"></span> cm</p>
+        <p class="card-text">Peso: <span th:text="${usuario.getAptitudFisica().getPeso()}"></span> Kg</p>
+      </div>
+    </div>
+  </div>
+  <div th:if="${rutinasSemanales.size() != 0}">
+    <div class="container">
+      <h1 class="mt-2 text-light text-center">Tu Rutina Semanal</h1>
+      <div class="text-center">
+        <!-- Botón para generar Excel para cada Rutina Semanal -->
+        <form th:action="@{/generarRutina}" method="get" class="d-inline-block mt-2">
+          <input type="hidden" name="idUsuario" th:value="${usuario.getId()}">
+          <button type="submit" class="btn btn-primary">Generar Excel</button>
+        </form>
+      </div>
+      <!-- Iterar sobre cada Rutina Semanal -->
+      <div th:each="rutinaSemanal : ${rutinasSemanales}">
+          <h3 th:text="${rutinaSemanal.getTipoRutina()}" class="text-center text-light"></h3>
+        <!-- Iterar sobre cada Rutina Diaria de la semana actual -->
+        <div class="text-light text-center mt-4" th:each="rutinaDiaria, stat : ${rutinaSemanal.getRutinaDiaria()}">
+          <h3 th:text="'Día: ' + (${stat.index} + 1)"></h3>
+
+          <table class="table table-bordered mt-3 text-light" style="background-color: rgba(0, 0, 0);">
+            <thead>
+            <tr>
+              <th>Duración</th>
+              <th>Ejercicio</th>
+              <th>Descripción</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="ejercicio : ${rutinaDiaria.getEjercicios()}">
+              <td th:text="${ejercicio.getDuracion() + ' minutos'}"></td>
+              <td th:text="${ejercicio.getNombre()}"></td>
+              <td th:text="${ejercicio.getDescripcion()}"></td>
+            </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div th:if="${rutinasSemanales.size() == 0}">
+  <div class="ag-format-container">
+    <div class="ag-courses_box">
+      <div class="ag-courses_item">
+        <a href="#" class="ag-courses-item_link">
+          <div class="ag-courses-item_bg"></div>
+          <div class="ag-courses-item_title">
+            Pack Gratuito
+          </div>
+          <div class="ag-courses-item_date-box">
+            <span class="ag-courses-item_date">
+           Rutina gratuita FREE
+          </span>
+          </div>
+        </a>
+        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#exampleModal">
+          Obtener Pack gratuito
+        </button>
+      </div>
+
+      <div class="ag-courses_item">
+        <a href="#" class="ag-courses-item_link">
+          <div class="ag-courses-item_bg"></div>
+
+          <div class="ag-courses-item_title">
+            Pack Intermedio $1000/mes
+          </div>
+
+          <div class="ag-courses-item_date-box">
+
+            <span class="ag-courses-item_date">
+            Rutina gratuita <br> Gym's
+          </span>
+
+          </div>
+        </a>
+        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalIntermedio">
+          Obtener Pack Intermedio
+        </button>
+      </div>
+      <div class="ag-courses_item">
+        <a href="#" class="ag-courses-item_link">
+          <div class="ag-courses-item_bg"></div>
+          <div class="ag-courses-item_title">
+            Pack Premium  $2000/mes
+          </div>
+          <div class="ag-courses-item_date-box">
+            <span class="ag-courses-item_date">
+             Rutina gratuita<br> Gym's <br>Consejos Alimentacion <br> Estadisticas
+          </span>
+          </div>
+        </a>
+        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalPremium">
+          Obtener Pack Premium
+        </button>
+      </div>
+    </div>
+  </div>
+  </div>
+
+
+  <!--Modal para contratar rutina Gratuita-->
+  <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-scrollable">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="exampleModalLabel">Cuando Durara tu rutina?</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <div th:if="${usuario.getAptitudFisica() == null}">
+            <p class="text-light">Por favor no olvide completar tu <a  class="inline-flex flex-col items-center justify-center px-5 hover:bg-gray-50 dark:hover:bg-gray-800 group" th:onclick="|window.location.href='@{/perfil}'|">Perfil</a></p>
+          </div>
+          <div th:if="${usuario.getAptitudFisica() != null}">
+            <form th:action="@{/asignarMembresia}" method="post">
+              <div class="form-group mb-3"> <!-- Agrega la clase "mb-3" para agregar espacio en la parte inferior -->
+                <input type="hidden"   name="email" th:value="${usuario.getEmail()}">
+                <input type="hidden"   name="tipo" th:value="GRATUITO">
+                <label for="duracion" class="mb-2">Cuántos meses de rutina?</label> <!-- Agrega la clase "mb-2" para agregar espacio en la parte inferior -->
+                <select class="form-control"   name="duracion">
+                  <option value="">Seleccionar</option>
+                  <option value="1">Uno</option>
+                  <option value="2">Dos</option>
+                  <option value="3">Tres</option>
+                </select>
+              </div>
+              <button type="submit" class="btn btn-primary mt-3">Suscripcion Gratuita</button> <!-- Agrega la clase "mt-3" para agregar espacio en la parte superior -->
+            </form>
+
+          </div>
+      </div>
+    </div>
+  </div>
+  </div>
+  <!--Modal Contratar rutina Intermedia -->
+  <div class="modal fade" id="modalIntermedio" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-scrollable">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="">Cuando Durara tu rutina?</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <div th:if="${usuario.getAptitudFisica() == null}">
+            <p class="text-light">Por favor no olvide completar tu <a  class="inline-flex flex-col items-center justify-center px-5 hover:bg-gray-50 dark:hover:bg-gray-800 group" th:onclick="|window.location.href='@{/perfil}'|">Perfil</a></p>
+          </div>
+          <div th:if="${usuario.getAptitudFisica() != null}">
+            <form th:action="@{/asignarMembresia}" method="post">
+              <div class="form-group mb-3"> <!-- Agrega la clase "mb-3" para agregar espacio en la parte inferior -->
+                <input type="hidden"   name="email" th:value="${usuario.getEmail()}">
+                <input type="hidden"  name="tipo" th:value="INTERMEDIO">
+                <label for="duracion" class="mb-2">Cuántos meses de rutina?</label> <!-- Agrega la clase "mb-2" para agregar espacio en la parte inferior -->
+                <select class="form-control"   name="duracion">
+                  <option value="">Seleccionar</option>
+                  <option value="1">Uno</option>
+                  <option value="2">Dos</option>
+                  <option value="3">Tres</option>
+                </select>
+              </div>
+              <button type="submit" class="btn btn-warning mt-3">Suscripcion Intermedia</button> <!-- Agrega la clase "mt-3" para agregar espacio en la parte superior -->
+            </form>
+
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- Modal contratar rutina Premium -->
+  <div class="modal fade" id="modalPremium" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-scrollable">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" >Rutina</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <div th:if="${usuario.getAptitudFisica() == null}">
+            <p class="text-light">Por favor no olvide completar tu <a  class="inline-flex flex-col items-center justify-center px-5 hover:bg-gray-50 dark:hover:bg-gray-800 group" th:onclick="|window.location.href='@{/perfil}'|">Perfil</a></p>
+          </div>
+          <div th:if="${usuario.getAptitudFisica() != null}">
+            <form th:action="@{/asignarMembresia}" method="post">
+              <div class="form-group mb-3"> <!-- Agrega la clase "mb-3" para agregar espacio en la parte inferior -->
+                <input type="hidden" id="email" name="email" th:value="${usuario.getEmail()}">
+                <input type="hidden" id="tipo" name="tipo" th:value="PREMIUM">
+                <label for="duracion" class="mb-2">Cuántos meses de rutina?</label> <!-- Agrega la clase "mb-2" para agregar espacio en la parte inferior -->
+                <select class="form-control" id="duracion" name="duracion">
+                  <option value="">Seleccionar</option>
+                  <option value="1">1</option>
+                  <option value="2">2</option>
+                  <option value="3">3</option>
+                </select>
+              </div>
+              <button type="submit" class="btn btn-danger mt-3">Suscripcion Premium</button> <!-- Agrega la clase "mt-3" para agregar espacio en la parte superior -->
+            </form>
+
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+ </main>
+<footer></footer>
+
+
+<!-- Boostrap core js -->
+<script src="https://unpkg.com/@themesberg/flowbite@1.1.1/dist/flowbite.bundle.js"></script>
+<script type="text/javascript" th:src="@{webjars/bootstrap/5.2.0/js/bootstrap.min.js}"></script>
+<script th:inline="javascript">
+</script>
+</body>
+</html>

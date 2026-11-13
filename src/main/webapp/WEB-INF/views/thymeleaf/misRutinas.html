@@ -1,0 +1,41 @@
+<!DOCTYPE HTML>
+<html lang="es" xmlns:th="http://www.thymeleaf.org"  xmlns:sec="http://www.thymeleaf.org/extras/spring-security" >
+<head th:replace="templates/head :: head">
+</head>
+<body>
+<div th:replace="templates/header :: header">
+</div>
+<div class="row p-5 text-light justify-content-center">
+    <div class="col-md-5 m-2 rounded-xl  bg-white bg-opacity-50">
+    <h2 class="">Mis rutinas</h2>
+    <div class="summary-card">
+        <h3>Resumen de la semana</h3>
+        <p class="texto2">4/5 Rutinas cumplidas</p>
+        <p class="texto2">-10% Peso</p>
+        <p class="texto2">IMC es 21.5</p>
+        <p class="texto2">1 Rutinas por hacer</p>
+    </div>
+    </div>
+        <div class="col-md-5 rounded-xl bg-white  bg-opacity-50">
+                <div class="col-user ">
+                    <img class="profile-img" th:src="@{/img/user-icon.png}" alt="">
+                    <p class="user-name">Nombre-Usuario</p>
+                </div>
+                <div class="col-list ">
+                    <p class="to-do-list">Por hacer</p>
+                    <ul>
+                        <li>Calentamiento previo</li>
+                        <li>Hidratacion</li>
+                        <li>Ejercicios</li>
+                        <li>Repeticiones</li>
+                        <li>Elongamiento</li>
+                    </ul>
+                </div>
+            </div>
+    </div>
+</div>
+
+<footer th:replace="templates/footer:: footer">
+</footer>
+</body>
+</html>

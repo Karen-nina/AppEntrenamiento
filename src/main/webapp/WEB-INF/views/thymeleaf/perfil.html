@@ -1,0 +1,413 @@
+<!DOCTYPE HTML>
+<html lang="es" xmlns:th="http://www.thymeleaf.org"  xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:replace="templates/head :: head">
+</head>
+<body>
+<div th:replace="templates/header :: header">
+</div>
+
+<div th:if="${error != null}">
+    <div th:replace="templates/errorModal :: accessDeniedModal(errorMessage=${error}, redirect=true)"></div>
+</div>
+
+<div class="flex flex-wrap">
+    <!-- Titulo -->
+    <div class="w-full  lg:mb-0 lg:w-12/12 lg:flex-none">  <h1 class="text-light text-center">Mi Perfil</h1></div>
+
+    <!-- Datos Personales -->
+    <div class="w-full px-3 mb-6 lg:mb-0 lg:w-6/12 lg:flex-none">
+        <div class="relative flex flex-col min-w-0 break-words shadow-soft-xl rounded-2xl bg-clip-border" style="background-color: rgb(0 0 0 / 81%);">
+            <form id="form-user" class="p-3" th:object="${usuario}">
+                <div class="flex-auto p-4">
+                    <div class="flex flex-wrap -mx-3">
+                        <div class="max-w-full px-3 lg:w-1/2 lg:flex-none">
+                            <div class="flex flex-col h-full">
+                                <h5 class="font-bold text-light text-center">Datos Personales</h5>
+                                <input type="hidden" th:name="id" th:id="id" th:field="*{id}" />
+                                <input type="hidden" th:name="latitud" th:id="latitud" th:field="*{latitud}" />
+                                <input type="hidden" th:name="longitud" th:id="longitud" th:field="*{longitud}" />
+                                <h3 class="form-signin-heading text-light text-center"></h3>
+                                <div data-mdb-input-init class="form-outline mb-3">
+                                    <label class="form-label text-light" for="Email">Nombre</label>
+                                    <input th:field="*{nombre}" id="nombre" class="form-control disabled" required />
+                                </div>
+                                <div data-mdb-input-init class="form-outline mb-3">
+                                    <label class="form-label text-light" for="Email">Apellido</label>
+                                    <input th:field="*{apellido}" id="apellido" class="form-control disabled" required />
+                                </div>
+                                <div data-mdb-input-init class="form-outline mb-3">
+                                    <label class="form-label text-light" for="Email">Dirección de correo electrónico</label>
+                                    <input th:field="*{email}" id="email" class="form-control disabled" required />
+                                </div>
+                                <button id="btn-guardar-user" class="btn btn-primary btn-lg" type="submit">Actualizar</button>
+                            </div>
+
+                        </div>
+                        <div class="max-w-full px-3 mt-12 ml-auto text-center lg:mt-0 lg:w-5/12 lg:flex-none">
+                            <div id="mapid" style="height: 50vh;"></div>
+                            <div class="ml-4 text-light" id="coordenadas"></div>
+                            <div class="text-light" id="direccion"></div>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+    <!--Aptitud Fisica -->
+    <div class="w-full max-w-full px-3 lg:w-4/12 lg:flex-none">
+        <div class="border-black/12.5 shadow-soft-xl relative flex h-full min-w-0 flex-col break-words rounded-2xl border-0 border-solid bg-clip-border p-4" style="background-color: rgb(0 0 0 / 81%);">
+            <form id="form-aptitud-fisica" class="p-3" th:object="${aptitudFisica}">
+                <h3 class="form-signin-heading text-light text-center">Datos de Aptitud Física: <span th:if="${usuario != null}"  th:text="${usuario.getNombre()}"> </span> </h3>
+                <input type="hidden" th:field="*{id}"/>
+                <div class="row">
+                    <div class="col-md-4">
+                        <div data-mdb-input-init class="form-outline mb-3">
+                            <label class="form-label text-light" for="altura">Altura (en cm)</label>
+                            <input id="altura" class="form-control" th:field="*{altura}" required/>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div data-mdb-input-init class="form-outline mb-3">
+                            <label class="form-label text-light" for="peso">Peso (en kg)</label>
+                            <input id="peso" class="form-control" th:field="*{peso}" required/>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div data-mdb-input-init class="form-outline mb-3">
+                            <label class="form-label text-light" for="fechaNacimiento">Fecha Nacimiento</label>
+                            <input id="fechaNacimiento" type="date" class="form-control" th:field="*{fechaNacimiento}" />
+                        </div>
+                    </div>
+                </div>
+
+                <div id="tiposEntrenamientoContainer">
+                    <div data-mdb-input-init class="form-outline mb-3" th:each="userEntrenamiento, i : ${userTiposEntrenamiento}">
+                        <div class="row">
+                            <div class="col-md-8">
+                                <label class="form-label text-light" for="tipoEntrenamiento">Tipo de entrenamiento</label>
+                                <div class="d-flex align-items-center">
+                                    <select id="tipoEntrenamiento" class="form-select" th:field="*{aptitudFisicaTipoEntrenamientos[__${i.index}__].tipoEntrenamiento.id}">
+                                        <option value="">Seleccione...</option>
+                                        <option th:each="entrenamiento : ${tipoDeEntrenamientos}"
+                                                th:value="${entrenamiento.id}"
+                                                th:text="${entrenamiento.nombre}"
+                                                th:selected="${userEntrenamiento.tipoEntrenamiento.id == entrenamiento.id}">
+                                        </option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label text-light" for="diasEntrenamiento${i.index}">Días por Semana</label>
+                                <input id="diasEntrenamiento${i.index}" type="text" class="form-control dias" th:field="*{aptitudFisicaTipoEntrenamientos[__${i.index}__].dias}">
+                            </div>
+                            <button type="button" class="btn btn-danger btn-sm ms-2 mt-2" onclick="removeEntrenamiento(this)">Borrar</button>
+                        </div>
+                        <input type="hidden" th:field="*{aptitudFisicaTipoEntrenamientos[__${i.index}__].id}"/>
+                        <input type="hidden" th:field="*{aptitudFisicaTipoEntrenamientos[__${i.index}__].aptitudFisica.id}"/>
+                    </div>
+                </div>
+
+                <div class="row" >
+                    <div class="col-md-4">
+                        <div data-mdb-input-init class="form-outline mb-3">
+                            <label class="form-label text-light" for="horasEntrenamiento">Hora por Sesion:</label>
+                            <input id="horasEntrenamiento" type="number" class="form-control" th:field="*{horasEntrenamiento}" required/>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div data-mdb-input-init class="form-outline mb-3">
+                            <label class="form-label text-light" for="estadoFisico">Tu estado físico:</label>
+                            <select id="estadoFisico" class="form-select inputEntrenamiento" th:field="*{estadoFisico}" required>
+                                <option value="">Seleccione...</option>
+                                <option value="sedentario">Sedentario</option>
+                                <option value="intermedio">Intermedio</option>
+                                <option value="entrenado">Entrenado</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <p th:if="${error != null}" class="alert pt-2 alert-danger" th:text="'Error ' + ${error}"></p>
+
+                <div class="text-center text-lg-start mt-4 pt-2">
+                    <button id="btn-guardar" class="btn btn-primary btn-lg" type="submit">Actualizar</button>
+                    <button type="button" class="btn btn-secondary btn-lg ms-2" onclick="addEntrenamiento()">Nuevo entrenamiento</button>
+                </div>
+                <span class="form-label text-light">*Para una nueva rutina tiene que renovar la membresia</span>
+            </form>
+        </div>
+    </div>
+
+    <div class="w-full max-w-full px-3 lg:w-2/12 lg:flex-none" th:if="${membresia != null}">
+        <div class="border-black/12.5 shadow-soft-xl relative flex h-full min-w-0 flex-col break-words rounded-2xl border-0 border-solid bg-clip-border p-4" style="background-color: rgb(0 0 0 / 81%);">
+            <span class="absolute top-0 left-0 w-full h-full bg-center bg-cover bg-gradient-to-tl from-gray-900 to-slate-800 opacity-80"></span>
+            <div class="relative z-10 flex flex-col flex-auto h-full p-4">
+                <h5 class="pt-2 mb-6 font-bold text-white" th:text="'Su Membresía Actual es de tier: ' + ${membresia.tipo}"></h5>
+                <p class="text-white" th:text="'Tiene vigencia hasta el: ' + ${membresia.fechaFin}"></p>
+                <button id="btn-actualizar-membresia" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#modalActualizarMembresia" type="button">Actualizar membresía</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="modalActualizarMembresia" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Actualizar Membresía</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form th:action="@{/asignarMembresia}" method="post" th:if="${membresia != null}">
+                    <input type="hidden" id="emailMembresia" name="email" th:value="${usuario.getEmail()}">
+
+                    <div class="form-group mb-3">
+                        <label for="tipo">Seleccione el tipo de membresía:</label>
+                        <select class="form-control" id="tipo" name="tipo">
+                            <option th:value="GRATUITO" th:if="${membresia.getTipo() != 'PREMIUM'}">Gratuito</option>
+                            <option th:value="INTERMEDIO" th:if="${membresia.getTipo() != 'PREMIUM'}">Intermedio</option>
+                            <option th:value="PREMIUM">Premium</option>
+                        </select>
+                    </div>
+
+
+                    <div class="form-group mb-3">
+                        <label for="duracion">Seleccione la duración en meses:</label>
+                        <select class="form-control" id="duracion" name="duracion">
+                            <option value="">Seleccionar</option>
+                            <option value="1">1</option>
+                            <option value="2">2</option>
+                            <option value="3">3</option>
+                        </select>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary mt-3">Actualizar Membresía</button>
+                    <button type="button" class="btn btn-secondary mt-3" data-bs-dismiss="modal">Cerrar</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<footer th:replace="templates/footer:: footer">
+</footer>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+<script th:inline="javascript">
+    $(document).ready(function() {
+
+        let latitud = /*[[${usuario.getLatitud()}]]*/
+        let longitud =  /*[[${usuario.getLongitud()}]]*/
+        let mymap = L.map('mapid').setView([latitud, longitud], 13);
+
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        }).addTo(mymap);
+        let customIcon = {
+            iconUrl:/*[[@{/img/puntero.png}]]*/,
+            iconSize:[40,40]
+        }
+        let myIcon = L.icon(customIcon);
+        let iconOptions = {
+            title:"ubicacion",
+            draggable:true,
+            icon:myIcon
+        }
+
+
+        // Inicializa el mapa y el marcador
+        let marker = L.marker([latitud, longitud], iconOptions).addTo(mymap);
+
+    // Función para actualizar la dirección
+        function actualizarDireccion(lat, lng) {
+            $.get(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lng}`, function(data) {
+                if (data && data.display_name) {
+                    $('#direccion').text(data.display_name);
+                } else {
+                    $('#direccion').text('No se encontró una dirección para las coordenadas proporcionadas.');
+                }
+            }).fail(function() {
+                $('#direccion').text('Error en la solicitud.');
+            });
+        }
+
+        // Llama a la función para actualizar la dirección al inicializar el marcador
+        actualizarDireccion(latitud, longitud);
+
+        // Evento para actualizar la dirección cuando el marcador se mueva
+        marker.on('dragend', function(event) {
+            var marker = event.target;
+            var position = marker.getLatLng();
+            marker.setLatLng(new L.LatLng(position.lat, position.lng), { draggable: true });
+            actualizarDireccion(position.lat, position.lng);
+        });
+
+    });
+</script>
+<script th:inline="javascript">
+
+    /*<![CDATA[*/
+   let arrayEntrenamientos = /*[[${tipoDeEntrenamientos}]]*/ [];
+   let tiposEntrenamientoOptions = [];
+
+   arrayEntrenamientos.forEach(element => {
+       tiposEntrenamientoOptions.push({"id":element.id,"nombre":element.nombre});
+   });
+
+   let opcionesHtml = tiposEntrenamientoOptions.map(function(entrenamiento) {
+       return '<option value="' + entrenamiento.id + '">' + entrenamiento.nombre + '</option>';
+   }).join('');
+   /*]]>*/
+
+  function updateEntrenamientoIndices() {
+    var container = document.getElementById('tiposEntrenamientoContainer');
+    var entrenamientos = container.children;
+
+    for (var i = 0; i < entrenamientos.length; i++) {
+        var select = entrenamientos[i].querySelector('select');
+        select.name = 'aptitudFisicaTipoEntrenamientos[' + i + '].tipoEntrenamiento.id';
+
+        var diasInput = entrenamientos[i].querySelector('input[id^="diasEntrenamiento"]');
+        diasInput.name = 'aptitudFisicaTipoEntrenamientos[' + i + '].dias';
+
+        var hiddenId = entrenamientos[i].querySelector('input[type="hidden"]');
+        hiddenId.name = 'aptitudFisicaTipoEntrenamientos[' + i + '].id';
+
+        var hiddenAptitudFisicaId = entrenamientos[i].querySelector('input[type="hidden"]:nth-of-type(2)');
+        hiddenAptitudFisicaId.name = 'aptitudFisicaTipoEntrenamientos[' + i + '].aptitudFisica.id';
+        }
+    }
+
+    function removeEntrenamiento(button) {
+        var container = document.getElementById('tiposEntrenamientoContainer');
+        if (container.children.length > 1) {
+            button.closest('.form-outline').remove();
+            updateEntrenamientoIndices();
+        } else {
+            alert('Debe haber al menos un tipo de entrenamiento.');
+        }
+    }
+
+    function addEntrenamiento() {
+    var container = document.getElementById('tiposEntrenamientoContainer');
+    var index = container.children.length;
+
+    if (index == 3) {
+        alert("No puede tener mas de tres entrenamientos.");
+        return
+    }
+
+    var newEntrenamiento = `
+        <div data-mdb-input-init class="form-outline mb-3">
+            <div class="row">
+                <div class="col-md-8">
+                    <label class="form-label text-light" for="tipoEntrenamiento">Tipo de entrenamiento</label>
+                    <div class="d-flex align-items-center">
+                        <select id="tipoEntrenamiento" class="form-select inputEntrenamiento" name="aptitudFisicaTipoEntrenamientos[` + index + `].tipoEntrenamiento.id">
+                            <option value="">Seleccione...</option>
+                            ` + opcionesHtml + `
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label text-light" for="diasEntrenamiento` + index + `">Días por Semana</label>
+                    <input id="diasEntrenamiento` + index + `" type="text" class="form-control dias" name="aptitudFisicaTipoEntrenamientos[` + index + `].dias">
+                </div>
+                <button type="button" class="btn btn-danger btn-sm ms-2 mt-2" onclick="removeEntrenamiento(this)">Borrar</button>
+            </div>
+            <input type="hidden" name="aptitudFisicaTipoEntrenamientos[` + index + `].id"/>
+            <input type="hidden" name="aptitudFisicaTipoEntrenamientos[` + index + `].aptitudFisica.id"/>
+        </div>
+    `;
+    container.insertAdjacentHTML('beforeend', newEntrenamiento);
+}
+
+    $(document).ready(function() {
+       $("#form-aptitud-fisica").submit(function(event) {
+           event.preventDefault();
+
+           var fechaDate = $("#fechaNacimiento").val();
+           var date = new Date(fechaDate);
+
+           var today = new Date();
+           var age = today.getFullYear() - date.getFullYear();
+           var m = today.getMonth() - date.getMonth();
+           if (m < 0 || (m === 0 && today.getDate() < date.getDate())) {
+               age--;
+           }
+
+           if (age < 18) {
+               alert("Debe ser mayor de 18 años para registrar esta información.");
+               return;
+           }
+
+            var sumaDias = 0;
+            $(".dias").each(function() {
+                var valor = parseInt($(this).val());
+                    sumaDias += valor;
+            });
+
+            if (sumaDias > 5) {
+                alert("La suma de los dias no puede ser mayor a 5.");
+                return;
+            }
+
+            var valoresSeleccionados = [];
+            var duplicado = false;
+
+            $(".inputEntrenamiento").each(function() {
+            var valor = $(this).val();
+            if (valor !== "") {
+                if (valoresSeleccionados.includes(valor)) {
+                    duplicado = true;
+                    return false; 
+                }
+                valoresSeleccionados.push(valor);
+             }
+            });
+
+            if (duplicado) {
+                alert("No se pueden seleccionar tipos de entrenamiento iguales.");
+                return;
+            }
+
+           var formData = $(this).serialize();
+
+           $.ajax({
+               type: "POST",
+               url: "/guardar-aptitud-fisica",
+               data: formData,
+               success: function(response) {
+                   alert("Datos actualizados correctamente");
+               },
+               error: function(error) {
+                   alert("Ocurrió un error al actualizar los datos");
+               }
+           });
+       });
+   });
+
+   $(document).ready(function() {
+       $("#form-user").submit(function(event) {
+           event.preventDefault();
+
+           var formData = $(this).serialize();
+
+           $.ajax({
+               type: "POST",
+               url: "/guardar-user-data",
+               data: formData,
+               success: function(response) {
+                   alert("Datos actualizados correctamente");
+               },
+               error: function(error) {
+                   alert("Ocurrió un error al actualizar los datos");
+               }
+           });
+       });
+   });
+
+</script>
+
+</html>
